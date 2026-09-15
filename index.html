@@ -1,0 +1,582 @@
+<title>列印路徑圖</title>
+<meta name="description" content="Bambu Lab A1 新手學習地圖：懶人快速上手、有機造型與精確機能兩條建模路線、材料與機型參考">
+<style>
+:root{
+  --bg:#FAF7F2;
+  --surface:#FFFFFF;
+  --ink:#2B2A28;
+  --muted:#726B62;
+  --accent:#E1592A;
+  --accent-soft:#FBE1D2;
+  --line:#E7E0D5;
+  --mono-ink:#5A5347;
+  --tab-bg:#F0EAE0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B1917;
+    --surface:#242220;
+    --ink:#F1ECE4;
+    --muted:#A79E92;
+    --accent:#FF8148;
+    --accent-soft:#3B2A1F;
+    --line:#3A3630;
+    --mono-ink:#C9BFAE;
+    --tab-bg:#242220;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B1917;
+  --surface:#242220;
+  --ink:#F1ECE4;
+  --muted:#A79E92;
+  --accent:#FF8148;
+  --accent-soft:#3B2A1F;
+  --line:#3A3630;
+  --mono-ink:#C9BFAE;
+  --tab-bg:#242220;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang TC','Noto Sans TC',system-ui,sans-serif;
+  line-height:1.6;
+}
+h1,h2,h3{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang TC','Noto Sans TC',system-ui,sans-serif;
+  text-wrap:balance;
+  margin:0;
+}
+.wrap{
+  max-width:800px;
+  margin:0 auto;
+  padding:48px 24px 96px;
+}
+
+/* header */
+header{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-bottom:32px;
+  padding-bottom:28px;
+  border-bottom:1px solid var(--line);
+}
+.kicker{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--accent);
+  font-weight:600;
+}
+h1{
+  font-size:clamp(28px,5vw,38px);
+  font-weight:600;
+  letter-spacing:-0.02em;
+  line-height:1.08;
+}
+.sub{
+  color:var(--muted);
+  font-size:15px;
+  line-height:1.6;
+  max-width:58ch;
+}
+.gear-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+.chip{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  color:var(--mono-ink);
+  background:var(--accent-soft);
+  padding:4px 10px;
+  border-radius:5px;
+}
+
+/* tabs — translucent material, floats over content */
+.tabbar{
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+  background:color-mix(in srgb, var(--tab-bg) 78%, transparent);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  padding:5px;
+  border-radius:12px;
+  margin-bottom:28px;
+  position:sticky;
+  top:12px;
+  z-index:10;
+  box-shadow:0 4px 16px rgba(0,0,0,.06);
+}
+.tab-btn{
+  font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',system-ui,sans-serif;
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--muted);
+  background:transparent;
+  border:none;
+  padding:9px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .18s cubic-bezier(.2,.8,.2,1),color .18s ease,transform .1s ease-out;
+}
+.tab-btn:hover{color:var(--ink);}
+.tab-btn:active{transform:scale(.96);}
+.tab-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.tab-btn[aria-selected="true"]{
+  background:var(--surface);
+  color:var(--ink);
+  box-shadow:0 1px 2px rgba(0,0,0,.08);
+}
+.tab-btn .n{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--accent);
+  margin-right:6px;
+}
+
+.panel[hidden]{display:none;}
+.panel{
+  animation:panel-in .32s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes panel-in{
+  from{opacity:0;transform:translateY(6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@media (prefers-reduced-motion: reduce){
+  .panel{animation:panel-in-fade .18s ease both;}
+  @keyframes panel-in-fade{from{opacity:0;}to{opacity:1;}}
+  .tab-btn:active{transform:none;}
+}
+.panel-head{margin-bottom:16px;}
+.panel-head h2{font-size:21px;font-weight:600;letter-spacing:-0.005em;margin-bottom:6px;}
+.panel-head p{color:var(--muted);font-size:14.5px;margin:0;max-width:60ch;}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:20px 22px;
+  margin-bottom:16px;
+}
+.card h3{font-size:17px;font-weight:600;letter-spacing:-0.005em;margin-bottom:8px;}
+
+ul.tasks{margin:0 0 14px;padding-left:18px;color:var(--ink);font-size:14.5px;letter-spacing:.005em;line-height:1.65;}
+ul.tasks li{margin-bottom:5px;}
+ul.tasks li::marker{color:var(--accent);}
+ul.tasks:last-child{margin-bottom:0;}
+
+.res{
+  border-top:1px dashed var(--line);
+  padding-top:12px;
+  margin-top:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+.res-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-right:4px;
+}
+.res-item{
+  font-size:13px;
+  letter-spacing:.01em;
+  color:var(--mono-ink);
+  background:var(--accent-soft);
+  padding:3px 9px 3px 8px;
+  border-radius:5px;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  transition:background .15s ease,transform .1s ease-out;
+}
+a.res-item:hover,a.res-item:focus-visible{background:var(--accent);color:var(--surface);}
+a.res-item:hover b,a.res-item:focus-visible b{color:var(--surface);}
+a.res-item:active{transform:scale(.95);}
+a.res-item:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){a.res-item:active{transform:none;}}
+.res-item b{color:var(--ink);font-weight:600;}
+.res-item svg{width:10px;height:10px;flex-shrink:0;opacity:.6;}
+
+.badge-paid{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.04em;
+  color:var(--accent);
+  background:var(--accent-soft);
+  border:1px solid var(--accent);
+  padding:1px 6px;
+  border-radius:4px;
+  margin-left:6px;
+  vertical-align:middle;
+}
+
+/* path pill row */
+.path{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  color:var(--ink);
+  background:var(--accent-soft);
+  border-radius:8px;
+  padding:10px 12px;
+  margin-bottom:14px;
+}
+.path .arrow{color:var(--accent);}
+.path .note{
+  font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',system-ui,sans-serif;
+  color:var(--muted);
+  font-size:12.5px;
+  width:100%;
+  margin-top:2px;
+}
+
+/* two-column split (path A vs B, tool vs tool) */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.split-col{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:14px 16px;}
+.split-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--accent);font-weight:600;margin-bottom:6px;
+}
+.split-name{font-size:16.5px;font-weight:600;margin-bottom:6px;}
+.split-desc{font-size:13.5px;color:var(--muted);margin:0;}
+@media (max-width:560px){.split{grid-template-columns:1fr;}}
+
+.note-box{
+  font-size:13.5px;
+  color:var(--muted);
+  background:var(--accent-soft);
+  border-radius:8px;
+  padding:10px 12px;
+  margin:0 0 14px;
+}
+
+/* tables */
+.mat-table-wrap{overflow-x:auto;margin-bottom:14px;border:1px solid var(--line);border-radius:10px;}
+.mat-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.mat-table th,.mat-table td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;}
+.mat-table td:nth-child(2){white-space:normal;min-width:200px;}
+.mat-table tr:last-child td{border-bottom:none;}
+.mat-table th{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);background:var(--bg);font-weight:600;
+}
+.mat-table td.ok::before{content:"✓ ";color:#3D8B5F;font-weight:700;}
+.mat-table td.warn::before{content:"△ ";color:var(--accent);font-weight:700;}
+.mat-table td.bad::before{content:"✕ ";color:#C23A3A;font-weight:700;}
+
+/* practice loop */
+.practice{
+  background:var(--surface);
+  border:1px solid var(--accent);
+  border-radius:12px;
+  padding:20px 22px;
+}
+.practice .kicker{margin-bottom:8px;}
+.practice p{margin:8px 0 0;font-size:14.5px;}
+.loop{
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px;
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--mono-ink);
+}
+.loop span.step{background:var(--accent-soft);padding:4px 9px;border-radius:5px;}
+.loop span.a{color:var(--accent);}
+
+/* role split table (BambuStudio) */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.role-col{border:1px solid var(--line);border-radius:9px;padding:14px 16px;background:var(--bg);}
+.role-col h4{font-size:14px;font-weight:600;margin:0 0 8px;color:var(--accent);}
+.role-col ul{margin:0;padding-left:16px;font-size:13.5px;}
+.role-col li{margin-bottom:4px;}
+@media (max-width:560px){.role-grid{grid-template-columns:1fr;}}
+
+footer{
+  margin-top:36px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace;
+}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">Learning Roadmap</div>
+  <h1>列印路徑圖</h1>
+  <p class="sub">從開機到自己建模列印——依你目前的優先順序（有機造型優先、懶人路線、機台不深究）重新整理。</p>
+  <div class="gear-row">
+    <span class="chip">機台 · Bambu Lab A1</span>
+    <span class="chip">切片 · BambuStudio</span>
+    <span class="chip">建模平台 · Mac</span>
+  </div>
+</header>
+
+<div class="tabbar" role="tablist" aria-label="學習路徑分頁">
+  <button class="tab-btn" role="tab" data-tab="quick" aria-selected="true"><span class="n">00</span>懶人快速上手</button>
+  <button class="tab-btn" role="tab" data-tab="organic" aria-selected="false"><span class="n">01</span>有機造型路線</button>
+  <button class="tab-btn" role="tab" data-tab="precise" aria-selected="false"><span class="n">02</span>精確機能路線</button>
+  <button class="tab-btn" role="tab" data-tab="role" aria-selected="false"><span class="n">03</span>軟體分工</button>
+  <button class="tab-btn" role="tab" data-tab="ref" aria-selected="false"><span class="n">04</span>材料與機型參考</button>
+  <button class="tab-btn" role="tab" data-tab="oss" aria-selected="false"><span class="n">05</span>免費模型平台</button>
+</div>
+
+<!-- 00 懶人快速上手 -->
+<section class="panel" id="panel-quick">
+  <div class="panel-head">
+    <h2>懶人快速上手</h2>
+    <p>只有 3 步，不用懂機台細節，先讓你當天就看到實體。</p>
+  </div>
+
+  <div class="card">
+    <h3>三步驟</h3>
+    <ul class="tasks">
+      <li><b>機台 15 分鐘</b>：開機校正一次、匯入 STL → BambuStudio 用預設參數切片 → 按列印</li>
+      <li><b>捏形狀</b>：Mac 用 ZBrushCoreMini（免費），有 iPad 的話也可以用 <b>Nomad Sculpt</b><span class="badge-paid">付費</span>——手指直接捏更直覺，兩選一即可（見「有機造型路線」分頁）</li>
+      <li><b>修復並匯出</b>：app 內建 Remesh 一鍵修復 → 匯出 STL → 丟回 BambuStudio 印</li>
+    </ul>
+    <div class="loop">
+      <span class="step a">捏形狀</span>→<span class="step">Remesh 修復</span>→<span class="step">匯出 STL</span>→<span class="step">BambuStudio 切片</span>→<span class="step a">A1 列印</span>
+    </div>
+  </div>
+
+  <div class="note-box">先只用 PLA、BambuStudio 全部用預設參數——材料特性與機型差異不用現在研究，需要時再翻「材料與機型參考」分頁。</div>
+
+  <div class="res">
+    <span class="res-label">資源</span>
+    <a class="res-item" href="https://wiki.bambulab.com/en/a1" target="_blank" rel="noopener"><b>Bambu Lab Wiki</b> 官方手冊<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://makerworld.com" target="_blank" rel="noopener"><b>MakerWorld</b> 官方模型庫<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://www.printables.com" target="_blank" rel="noopener"><b>Printables</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+  </div>
+</section>
+
+<!-- 01 有機造型路線 -->
+<section class="panel" id="panel-organic" hidden>
+  <div class="panel-head">
+    <h2>有機造型路線</h2>
+    <p>目前的主線——公仔、擺飾、曲線裝飾品這類不講究精確尺寸的作品，用數位黏土邏輯直接捏。</p>
+  </div>
+
+  <div class="path">
+    <span class="step">ZBrushCoreMini（Mac，免費）</span><span class="arrow">/</span>
+    <span class="step">Nomad Sculpt（iPad，付費）</span><span class="arrow">→</span>
+    <span class="step">Blender Sculpt Mode（備用）</span>
+    <span class="note">Mac 用 ZBrushCoreMini，有 iPad 想要更直覺的手指操作就用 Nomad Sculpt，兩者擇一；覺得功能不夠精細再轉 Blender</span>
+  </div>
+
+  <div class="card">
+    <h3>ZBrushCoreMini（Mac 首選）</h3>
+    <ul class="tasks">
+      <li>免費、Mac 原生支援，Pixologic 官方專門給 3D 列印愛好者做的簡化版</li>
+      <li>純滑鼠/繪圖板操作，捏、拉、刷都直覺，跟捏黏土邏輯一樣</li>
+      <li>內建 Remesh／修復功能，匯出的模型是列印友善的密閉實體</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Nomad Sculpt<span class="badge-paid">付費</span>（iPad 專用）</h3>
+    <ul class="tasks">
+      <li>一次性購買約 NT$300，iOS／iPadOS 限定，Mac 上無法安裝</li>
+      <li>手指／Apple Pencil 直接雕塑，比滑鼠操作更貼近真的捏黏土的手感</li>
+      <li>同樣內建 Remesh 修復＋直接匯出 STL，社群大量公仔/擺飾都用這個做</li>
+      <li>如果你之後有 iPad，這是比 ZBrushCoreMini 更直覺的選項；沒有 iPad 就用 ZBrushCoreMini 一樣夠用</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Blender Sculpt Mode（備用）</h3>
+    <ul class="tasks">
+      <li>免費、功能更強，但介面複雜——只用 Sculpt Mode，忽略動畫/算圖等用不到的功能</li>
+      <li>搭配內建 <b>3D-Print Toolbox</b> 外掛檢查與修復破面</li>
+      <li>學習曲線比 ZBrushCoreMini 陡，但教學資源最多，卡關比較好找答案</li>
+    </ul>
+  </div>
+
+  <div class="res">
+    <span class="res-label">資源</span>
+    <a class="res-item" href="https://pixologic.com/zbrushcoremini/" target="_blank" rel="noopener"><b>ZBrushCoreMini</b> 官方下載<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://apps.apple.com/app/nomad-sculpt/id1592293410" target="_blank" rel="noopener"><b>Nomad Sculpt</b> App Store<span class="badge-paid">付費</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://www.blender.org/download/" target="_blank" rel="noopener"><b>Blender</b> 官方下載<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+  </div>
+</section>
+
+<!-- 02 精確機能路線 -->
+<section class="panel" id="panel-precise" hidden>
+  <div class="panel-head">
+    <h2>精確機能路線</h2>
+    <p>備用路線——當你需要「量身訂做、要跟別的東西組裝」的機能性物件時再回來用，不是現在的優先。</p>
+  </div>
+
+  <div class="split">
+    <div class="split-col">
+      <div class="split-label">方案 1 · 手動入門</div>
+      <div class="split-name">Shapr3D</div>
+      <p class="split-desc">Mac 桌面版可用，CAD 核心跟 Fusion 360 同等級，畫出來的模型必為密閉實體，適合直接列印。</p>
+    </div>
+    <div class="split-col">
+      <div class="split-label">方案 2 · 跟 Claude 一起做</div>
+      <div class="split-name">OpenSCAD</div>
+      <p class="split-desc">模型是純文字程式碼，你描述需求，Claude 直接生成/修改參數，貼上按 Render 就匯出 STL。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>列印品質提醒（機能件適用）</h3>
+    <ul class="tasks">
+      <li>最小壁厚建議 ≥1.2mm（0.4mm 噴頭約 3 圈牆），太薄容易破洞或軟趴趴</li>
+      <li>要組裝的零件之間留 0.2–0.3mm 公差，太剛好會卡死印不進去</li>
+      <li>畫之前先想這個角度躺著印需不需要大量支撐</li>
+      <li>匯出前確認模型是「實體」而非破面網格，避免切片跳錯誤警告</li>
+    </ul>
+  </div>
+
+  <div class="res">
+    <span class="res-label">資源</span>
+    <a class="res-item" href="https://www.shapr3d.com/learn" target="_blank" rel="noopener"><b>Shapr3D</b> 官方教學<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://openscad.org" target="_blank" rel="noopener"><b>OpenSCAD</b> 官網／下載<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://openscad.org/cheatsheet/" target="_blank" rel="noopener"><b>OpenSCAD</b> 語法速查表<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+  </div>
+</section>
+
+<!-- 03 軟體分工 -->
+<section class="panel" id="panel-role" hidden>
+  <div class="panel-head">
+    <h2>軟體分工</h2>
+    <p>BambuStudio 是切片軟體，不是建模軟體——建模跟切片是兩個不同的階段，各自的工具不能互相取代。</p>
+  </div>
+
+  <div class="role-grid">
+    <div class="role-col">
+      <h4>建模軟體（畫形狀）</h4>
+      <ul>
+        <li>從無到有畫出一個形狀</li>
+        <li>ZBrushCoreMini／Blender：雕塑有機曲線</li>
+        <li>Shapr3D／OpenSCAD：精確尺寸的機能件</li>
+      </ul>
+    </div>
+    <div class="role-col">
+      <h4>BambuStudio（切片＋控制機器）</h4>
+      <ul>
+        <li>匯入模型：STL/3MF/STEP</li>
+        <li>簡單擺放/縮放/旋轉/鏡射/複製排版</li>
+        <li>基礎布林運算、壓文字/浮雕</li>
+        <li>支撐設定、切片參數（層高/填充率/溫度）</li>
+        <li>連線機器、監控列印、AMS 換料、校準精靈</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note-box">簡單記：形狀在建模軟體裡生出來，BambuStudio 只負責「印之前最後調整＋切片＋控制機器」。</div>
+</section>
+
+<!-- 04 材料與機型參考 -->
+<section class="panel" id="panel-ref" hidden>
+  <div class="panel-head">
+    <h2>材料與機型參考</h2>
+    <p>背景知識，非必修——不感興趣可以完全跳過，維持用 PLA／預設參數就好。</p>
+  </div>
+
+  <div class="mat-table-wrap">
+    <table class="mat-table">
+      <thead><tr><th>材料</th><th>特性</th><th>難度</th><th>A1 印得動嗎</th></tr></thead>
+      <tbody>
+        <tr><td><b>PLA</b></td><td>最好印、環保、無異味，但怕熱（約 60°C 就軟化變形）、較脆</td><td>新手首選</td><td class="ok">沒問題</td></tr>
+        <tr><td><b>PETG</b></td><td>耐候防水、較有韌性，黏床力強、容易牽絲</td><td>中等</td><td class="ok">印得很順</td></tr>
+        <tr><td><b>TPU</b></td><td>軟性材料，可彎曲，適合手機殼、氣密墊圈</td><td>中高（需放慢速度）</td><td class="ok">可以，需調參數</td></tr>
+        <tr><td><b>ABS</b></td><td>耐熱耐衝擊，但收縮翹曲嚴重、有異味</td><td>高</td><td class="warn">不建議——A1 無恆溫艙，冷風吹易翹邊</td></tr>
+        <tr><td><b>PA／PC</b></td><td>高強度進階材料，需要高溫噴頭</td><td>進階</td><td class="bad">不建議——噴頭不耐磨、無恆溫艙</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-box">新手結論：PLA 練手感，PETG 做需要耐用的實品，這兩種就夠你用很久了。</div>
+
+  <div class="mat-table-wrap">
+    <table class="mat-table">
+      <thead><tr><th>機型</th><th>機身</th><th>能印的材料上限</th></tr></thead>
+      <tbody>
+        <tr><td><b>A1 / A1 mini</b></td><td>開放式機身</td><td>PLA／PETG／TPU</td></tr>
+        <tr><td><b>P1P</b></td><td>基本外殼，非恆溫艙</td><td>PETG 穩定，ABS 有限</td></tr>
+        <tr><td><b>P1S</b></td><td>全罩＋主動加熱艙</td><td>ABS／ASA 印得穩</td></tr>
+        <tr><td><b>X1 Carbon</b></td><td>全罩＋活性碳過濾＋高精度</td><td>PA／PC 等高階材料</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-box">簡單記法：機身有沒有艙門包起來、有沒有主動加熱艙＝能不能印怕翹曲的高階材料。A1 沒有，乖乖用 PLA/PETG 就好。</div>
+
+  <div class="res">
+    <span class="res-label">資源</span>
+    <a class="res-item" href="https://wiki.bambulab.com" target="_blank" rel="noopener"><b>Bambu Lab</b> 官方材料介紹<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://all3dp.com/1/3d-printer-filament-types-3d-printing-3d-filament/" target="_blank" rel="noopener"><b>All3DP</b> 材料圖文指南（英文）<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://www.youtube.com/@CNCKitchen" target="_blank" rel="noopener">YouTube <b>CNC Kitchen</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+  </div>
+</section>
+
+<!-- 05 免費模型平台 -->
+<section class="panel" id="panel-oss" hidden>
+  <div class="panel-head">
+    <h2>免費模型平台</h2>
+    <p>別人已經建好、可以直接下載拿去印的成品模型庫——想印什麼直接先來這裡找，不用自己從零建模。</p>
+  </div>
+
+  <div class="mat-table-wrap">
+    <table class="mat-table">
+      <thead><tr><th>平台</th><th>特色</th></tr></thead>
+      <tbody>
+        <tr><td><b>MakerWorld</b></td><td>Bambu 官方平台，模型自帶推薦列印參數，跟 A1 相容度最高，新手最友善</td></tr>
+        <tr><td><b>Printables</b></td><td>Prusa 社群，量大質精，常有教學向模型跟設計師作品</td></tr>
+        <tr><td><b>Thingiverse</b></td><td>歷史最久、數量最多的免費模型庫，品質參差需自己篩選</td></tr>
+        <tr><td><b>Cults3D</b></td><td>設計感較強的作品多，免費／付費模型並存，適合找有質感的裝飾類造型</td></tr>
+        <tr><td><b>Thangs</b></td><td>支援「以模型找模型」的視覺搜尋，找相似造型或替代零件方便</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box">先只用 MakerWorld＋Printables 就夠——資源太多反而分散注意力，其他平台等這兩個找不到你要的東西時再展開。</div>
+
+  <div class="res">
+    <span class="res-label">資源</span>
+    <a class="res-item" href="https://makerworld.com" target="_blank" rel="noopener"><b>MakerWorld</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://www.printables.com" target="_blank" rel="noopener"><b>Printables</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://www.thingiverse.com" target="_blank" rel="noopener"><b>Thingiverse</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://cults3d.com" target="_blank" rel="noopener"><b>Cults3D</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+    <a class="res-item" href="https://thangs.com" target="_blank" rel="noopener"><b>Thangs</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg></a>
+  </div>
+</section>
+
+<footer>Bambu Lab A1 · BambuStudio · 學習路徑 v2</footer>
+
+</div>
+
+<script>
+(function(){
+  var buttons = document.querySelectorAll('.tab-btn');
+  var panels = {
+    quick: document.getElementById('panel-quick'),
+    organic: document.getElementById('panel-organic'),
+    precise: document.getElementById('panel-precise'),
+    role: document.getElementById('panel-role'),
+    ref: document.getElementById('panel-ref'),
+    oss: document.getElementById('panel-oss')
+  };
+  buttons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      buttons.forEach(function(b){ b.setAttribute('aria-selected','false'); });
+      Object.keys(panels).forEach(function(k){ panels[k].hidden = true; });
+      btn.setAttribute('aria-selected','true');
+      panels[btn.dataset.tab].hidden = false;
+    });
+  });
+})();
+</script>
